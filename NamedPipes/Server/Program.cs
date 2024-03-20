@@ -11,11 +11,14 @@ internal class Program
     {
         Task t1 = Task.Factory.StartNew(() => { CreateServer(); });
         char input = 'r';
-        Console.WriteLine("Write M to send a message to client \r\n");
-        Console.WriteLine("Write Q to EXIT");
+       
 
         do
         {
+            Console.WriteLine("1-Write M to send a message to client \r\n" +
+               "2-Write Q to EXIT \r\n" +
+               "********************");
+
             input = Console.ReadKey().KeyChar;
             if (input == 'M' || input == 'm')
             {
@@ -23,19 +26,20 @@ internal class Program
             }
             if (input == 'q' || input == 'Q')
             {
+                Console.Write("\n Good bye!");
+                Task.Delay(2);
                 Environment.Exit(0);
             }
+            else{
+                Console.WriteLine("Invalid option");
+            }
         } while (input != 'Q');
-
-
-
        
     }
     static void CreateServer()
     {
         try
         {
-
             while (true)
             {
                 if (pipeService1 == null)
@@ -54,15 +58,11 @@ internal class Program
                         if (temp != null)
                         {
                             Console.WriteLine(temp);
-
                         }
                     }
-
-                    Console.WriteLine(pipe?.IsConnected);
-
+                    Console.WriteLine("Done!");
                 }
-                pipeService1.Dispose();
-                pipeService1 = null;
+            
             }
         }
         catch (System.IO.IOException ioExc)
@@ -73,6 +73,11 @@ internal class Program
         {
             Console.WriteLine(Exc.ToString());
         }
+        finally
+        {
+            pipeService1?.Dispose();
+            pipeService1 = null;
+        }
     }
     static void CreateClient()
     {
@@ -82,7 +87,7 @@ internal class Program
                     {
                         pipeService2 = new PipesHelper(PipeName2, pipeType.client);
 
-                        Console.Write("Attempting to connect to test pipe {0} press Q to exit...", PipeName1);
+                        Console.Write("\r\n Attempting to connect to test pipe {0}...", PipeName1);
                         pipeService2?._namedPipeClientStream?.Connect(TimeSpan.FromSeconds(3));
                         Console.WriteLine("Client connected to pipe!, with {0} Instances.", pipeService2?._namedPipeClientStream?.NumberOfServerInstances);
                     }
@@ -95,21 +100,21 @@ internal class Program
                      
                         Console.WriteLine("\n Message:{0} sent to the server ", message);
                         pipeService2?.Dispose();
-                pipeService2 = null;
+                        pipeService2 = null;
 
                     }
-               
-               
             }
-            catch (System.TimeoutException te)
-            {
-                pipeService2 = null;
-                Console.WriteLine("server is not available...");
-              
-            }
-       
-    }
-    
+        catch (System.TimeoutException te)
+        {
+            pipeService2 = null;
+            Console.WriteLine("server is not available...");
 
-   
+        }
+        catch (Exception exc)
+        {
+            pipeService2 = null;
+            Console.WriteLine("General error:{0}", exc.Message);
+        }
+
+    }
 }
